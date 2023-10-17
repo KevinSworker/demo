@@ -91,13 +91,6 @@ class MyDirEventHandler(FileSystemEventHandler):
             return False
 
 
-def get_file_md5(file_path):
-    with open(file_path, 'rb') as f:
-        md5 = hashlib.md5()
-        md5.update(f.read())
-        return md5.hexdigest
-
-
 """
 使用watchdog 监控文件的变化
 """

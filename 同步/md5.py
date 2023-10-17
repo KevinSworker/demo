@@ -2,6 +2,7 @@
 
 import hashlib
 import os
+import time
 
 def get_file_md5(file_name):
     """
@@ -11,30 +12,21 @@ def get_file_md5(file_name):
     """
     if os.path.isfile(file_name):
         # 文件是存在的
-        m = hashlib.md5()   #创建md5对象
         while True:
-            try:
-                with open(file_name, 'rb') as fobj:
-                    while True:
-                        data = fobj.read(4096)
-                        if not data:
-                            break
-                        m.update(data)  #更新md5对象
+            if file_is_openState(file_name):
+                return general_md5(file_name)
+            else:
+                time.sleep(0.2)
+
+def general_md5(file_name):
+    m = hashlib.md5()   #创建md5对象
+    with open(file_name, 'rb') as fobj:
+        while True:
+            data = fobj.read(4096)
+            if not data:
                 break
-            except Exception as e:
-                print(e)
-
-    return m.hexdigest()    #返回md5对象
-                
-
-    # with open(file_name,'rb') as fobj:
-    #     while True:
-    #         data = fobj.read(4096)
-    #         if not data:
-    #             break
-    #         m.update(data)  #更新md5对象
-
-
+            m.update(data)  #更新md5对象
+    return m.hexdigest()
 
 def get_str_md5(content):
     """
@@ -48,10 +40,8 @@ def get_str_md5(content):
 def file_is_openState(file_path):
     try:
         with open(file_path, "r") as f:
-            print("文件可以打开")
             return True
     except Exception as e:
-        print(e)
         return False
 
 if __name__ == '__main__':
