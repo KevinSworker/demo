@@ -42,9 +42,10 @@ class MyDirEventHandler(FileSystemEventHandler):
         # 先判断是文件还是目录
         # 目录
         if event.is_directory:
-            print("create dir", event.src_path)
             relative_path = os.path.relpath(event.src_path, LOCAL_PATH) 
-            print(relative_path)
+            remote_dir_path = os.path.join(REMOTE_PATH, relative_path)
+            if not self.is_dir_exist(remote_dir_path):
+                os.makedirs(remote_dir_path)
         else:
             # 文件名称
             file_name = os.path.basename(event.src_path)
@@ -101,9 +102,7 @@ if __name__ == '__main__':
     fileHandler = MyDirEventHandler()
 
     # 为观察者设置观察对象与处理事件对象
-    # observer.schedule(fileHandler, "\\\\192.168.123.10\\share\\user\\zhouhan\\work\\同步", True)
     observer.schedule(fileHandler, LOCAL_PATH, True)
-    # observer.schedule(fileHandler, "\\192.168.123.10\share\user\zhouhan\work\同步", "D:\\work\\同步文件夹", True)
     observer.start()
     try:
         while True:
