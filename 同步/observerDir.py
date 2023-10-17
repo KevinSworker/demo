@@ -25,6 +25,7 @@ class MyDirEventHandler(FileSystemEventHandler):
 
     def on_deleted(self, event):
         print(event)
+        self.deal_with_delete(event)
 
     def on_modified(self, event):
         print("modified:", event, event.src_path)
@@ -70,12 +71,37 @@ class MyDirEventHandler(FileSystemEventHandler):
                 if not self.is_dir_exist(remote_dir_path):
                     os.makedirs(remote_dir_path)
                 while True:
-                    if md5.file_is_openState(event.src_path):
-                        shutil.copy2(event.src_path, remote_file_path)
-                        break
+                    if self.is_file_exist(event.src_path):
+                        if md5.file_is_openState(event.src_path):
+                            shutil.copy2(event.src_path, remote_file_path)
+                            break
+                        else:
+                            time.sleep(1)
                     else:
-                        time.sleep(1)
+                        break
 
+                    # if md5.file_is_openState(event.src_path):
+                    #     shutil.copy2(event.src_path, remote_file_path)
+                    #     break
+                    # else:
+                    #     time.sleep(1)
+
+    
+    def deal_with_delete(self, event):
+        # 操作删除
+        relative_path = os.path.relpath(event.src_path, LOCAL_PATH) 
+        remote_dir_path = os.path.join(REMOTE_PATH, relative_path)
+
+        try:
+            os.remove(remote_dir_path)
+        except Exception as e:
+            pass
+
+        try:
+            shutil.rmtree(remote_dir_path)
+            os.remove(remote_dir_path)
+        except Exception as e:
+            pass
 
     # 判断文件是否存在
     def is_file_exist(self, file_path):
