@@ -46,8 +46,16 @@ class MyDirEventHandler(FileSystemEventHandler):
             relative_path = os.path.relpath(event.src_path, LOCAL_PATH) 
             print(relative_path)
         else:
+            # 文件名称
             file_name = os.path.basename(event.src_path)
-            remote_file_path = os.path.join(REMOTE_PATH, file_name)
+
+            # 根据绝对路径生成远程路径对应文件夹
+            path = os.path.abspath(event.src_path)
+            local_dir_path = os.path.split(path)[0]
+            relative_path = os.path.relpath(local_dir_path, LOCAL_PATH) 
+            remote_dir_path = os.path.join(REMOTE_PATH, relative_path)
+            remote_file_path = os.path.join(remote_dir_path, file_name)
+
             if self.is_file_exist(remote_file_path):
                 # 远程文件也存在
                 local_md5 = md5.get_file_md5(event.src_path)
@@ -58,7 +66,15 @@ class MyDirEventHandler(FileSystemEventHandler):
             else:
                 print("执行拷贝式拷贝")
                 # 需要先判断路径是否存在，如果不存在，先创建路径再进行拷贝
-                shutil.copy2(event.src_path, remote_file_path)
+                if not self.is_dir_exist(remote_dir_path):
+                    os.makedirs(remote_dir_path)
+                while True:
+                    if md5.file_is_openState(event.src_path):
+                        shutil.copy2(event.src_path, remote_file_path)
+                        break
+                    else:
+                        time.sleep(1)
+
 
     # 判断文件是否存在
     def is_file_exist(self, file_path):
